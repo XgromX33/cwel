@@ -1,7 +1,6 @@
 <?php
 $conn = new mysqli("localhost", "root", "Lenovo1nur", "wfo");
 
-if ($conn->connect_error) {
-    die("Błąd połączenia z bazą danych: " . $conn->connect_error);
-}
+// Instead of dying with a text message, just set the connection
+// The calling scripts will handle the error appropriately with JSON responses
 ?>
