@@ -64,10 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
 });
 
+// Define currentOverlay variable
+let currentOverlay = null;
+
 // Watchlist functions
 async function getWatchlist() {
   try {
-    const response = await fetch('watchlist_actions.php', {
+    const response = await fetch('/watchlist_actions.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -94,7 +97,7 @@ async function addToWatchlist(movieId) {
   if (!movie) return;
 
   try {
-    const response = await fetch('watchlist_actions.php', {
+    const response = await fetch('/watchlist_actions.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -121,7 +124,7 @@ async function removeFromWatchlist(movieId) {
   if (!movie) return;
 
   try {
-    const response = await fetch('watchlist_actions.php', {
+    const response = await fetch('/watchlist_actions.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
