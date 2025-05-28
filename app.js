@@ -65,18 +65,79 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Watchlist functions
-function getWatchlist() {
-  const watchlistCookie = document.cookie
-    .split('; ')
-    .find(row => row.startsWith('wfo_watchlist='));
+async function getWatchlist() {
+  try {
+    const response = await fetch('watchlist_actions.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'get'
+      })
+    });
 
-  if (watchlistCookie) {
-    const watchlist = JSON.parse(decodeURIComponent(watchlistCookie.split('=')[1]));
-    console.log('Retrieved watchlist from cookie:', watchlist);
-    return watchlist;
+    if (!response.ok) throw new Error('Network response was not ok');
+    const data = await response.json();
+    return data.watchlist || [];
+  } catch (error) {
+    console.error('Error fetching watchlist:', error);
+    return [];
   }
-  console.log('No watchlist cookie found, returning empty array');
-  return [];
+}
+
+async function addToWatchlist(movieId) {
+  const movie = movies[movieId];
+  if (!movie) return;
+
+  try {
+    const response = await fetch('watchlist_actions.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'add',
+        title: movie.title,
+        year: movie.year
+      })
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+    await updateWatchlistUI();
+  } catch (error) {
+    console.error('Error adding to watchlist:', error);
+  }
+}
+
+async function removeFromWatchlist(movieId) {
+  const movie = movies[movieId];
+  if (!movie) return;
+
+  try {
+    const response = await fetch('watchlist_actions.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'remove',
+        title: movie.title,
+        year: movie.year
+      })
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+    await updateWatchlistUI();
+  } catch (error) {
+    console.error('Error removing from watchlist:', error);
+  }
+}
+
+async function isInWatchlist(movieId) {
+  const watchlist = await getWatchlist();
+  const movie = movies[movieId];
+  return watchlist.includes(movie.title);
 }
 
 // Debug function to check watchlist status
@@ -140,44 +201,6 @@ function updateWatchlistUI() {
 
   // Re-setup movie overlay for new watchlist cards
   setupMovieOverlay();
-}
-
-function addToWatchlist(movieId) {
-  console.log('Adding movie to watchlist:', movieId);
-  const watchlist = getWatchlist();
-  if (!watchlist.includes(movieId)) {
-    watchlist.push(movieId);
-    const expiryDate = new Date();
-    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-    document.cookie = `wfo_watchlist=${encodeURIComponent(JSON.stringify(watchlist))}; expires=${expiryDate.toUTCString()}; path=/`;
-    console.log('Updated watchlist:', watchlist);
-    console.log('Cookie set:', document.cookie);
-    console.log('Updating UI after adding movie...');
-    updateWatchlistUI();
-  } else {
-    console.log('Movie already in watchlist');
-  }
-}
-
-function removeFromWatchlist(movieId) {
-  console.log('Removing movie from watchlist:', movieId);
-  const watchlist = getWatchlist();
-  const index = watchlist.indexOf(movieId);
-  if (index > -1) {
-    watchlist.splice(index, 1);
-    const expiryDate = new Date();
-    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-    document.cookie = `wfo_watchlist=${encodeURIComponent(JSON.stringify(watchlist))}; expires=${expiryDate.toUTCString()}; path=/`;
-    console.log('Updated watchlist:', watchlist);
-    console.log('Updating UI after removing movie...');
-    updateWatchlistUI();
-  } else {
-    console.log('Movie not found in watchlist');
-  }
-}
-
-function isInWatchlist(movieId) {
-  return getWatchlist().includes(movieId);
 }
 
 // Create movie card HTML
