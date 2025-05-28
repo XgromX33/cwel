@@ -1,6 +1,10 @@
 <?php
 $conn = new mysqli("localhost", "root", "Lenovo1nur", "wfo");
 
-// Instead of dying with a text message, just set the connection
-// The calling scripts will handle the error appropriately with JSON responses
+if ($conn->connect_error) {
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode(['error' => 'Database connection failed']);
+    exit;
+}
 ?>
